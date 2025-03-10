@@ -4,6 +4,9 @@ pipeline {
     environment {
         PHP_IMAGE = "php:8.2-cli"   // Gunakan image PHP 8.2
         COMPOSER_CACHE_DIR = "$WORKSPACE/.composer"
+
+        // Tambahkan path Docker agar dikenali oleh Jenkins
+        PATH = "/c/Program\\ Files/Docker/Docker/resources/bin:$PATH"
     }
 
     stages {
