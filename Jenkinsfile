@@ -6,9 +6,9 @@ pipeline {
         COMPOSER_CACHE_DIR = "$WORKSPACE/.composer"
 
         // Tambahkan path Docker agar dikenali oleh Jenkins
-        PATH = "/c/Program\\ Files/Docker/Docker/resources/bin:$PATH"
+        //PATH = "/c/Program\\ Files/Docker/Docker/resources/bin:$PATH"
         PATH = "/c/Program Files/Docker/Docker/resources/bin:$PATH"
-        PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;$PATH"
+        //PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;$PATH"
     }
 
     stages {
