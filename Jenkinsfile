@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        PHP_IMAGE = "php:8.2-cli"   // Gunakan image PHP 8.2
+        PHP_IMAGE = "php:8.2-apache"   // Gunakan image PHP 8.2
         COMPOSER_CACHE_DIR = "$WORKSPACE/.composer"
 
         // Tambahkan path Docker agar dikenali oleh Jenkins
