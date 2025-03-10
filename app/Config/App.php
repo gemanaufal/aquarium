@@ -16,11 +16,11 @@ class App extends BaseConfig
      *
      * E.g., http://example.com/
      */
-    public string $baseURL = 'http://smartaquarium.test/';
+    public string $baseURL = 'http://localhost:8089/';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.
-     * If you want to accept multiple Hostnames, set this.
+     * If you want to accept multiple Hostnames, set this.php spark serve
      *
      * E.g.,
      * When your site URL ($baseURL) is 'http://example.com/', and your site
