@@ -2,37 +2,46 @@ pipeline {
     agent any
 
     environment {
-        PHP_IMAGE = "php:8.2-apache"  // Pastikan pakai image yang benar
-        CONTAINER_NAME = "aquarium"
-        APP_PORT = "8089"  // Sesuaikan port yang diinginkan
+        PHP_IMAGE = "php:8.2-apache"   // Gunakan image PHP 8.2
+        COMPOSER_CACHE_DIR = "$WORKSPACE/.composer"
     }
 
     stages {
-        stage('Pull Image') {
+        stage('Checkout') {
             steps {
                 script {
-                    sh "docker pull ${PHP_IMAGE}"
+                    git branch: 'main', url: 'https://github.com/gemanaufal/aquarium.git'  // Ganti dengan repo kamu
                 }
             }
         }
 
-        stage('Run Container') {
+        stage('Install Dependencies') {
             steps {
                 script {
-                    // Stop & remove container jika sudah ada sebelumnya
-                    sh """
-                        docker stop ${CONTAINER_NAME} || true
-                        docker rm ${CONTAINER_NAME} || true
-                        docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:8089 ${PHP_IMAGE}
-                    """
+                    docker.image(PHP_IMAGE).inside {
+                        sh 'php -v'  // Cek PHP version
+                        sh 'composer install --no-dev --prefer-dist'
+                    }
                 }
             }
         }
 
-        stage('Check Running Container') {
+        // stage('Run Migrations') {
+        //     steps {
+        //         script {
+        //             docker.image(PHP_IMAGE).inside {
+        //                 sh 'php spark migrate'  // Jalankan migrasi database
+        //             }
+        //         }
+        //     }
+        // }
+
+        stage('Start Application') {
             steps {
                 script {
-                    sh "docker ps"
+                    docker.image(PHP_IMAGE).inside {
+                        sh 'php spark serve --host=0.0.0.0 --port=8089 &'
+                    }
                 }
             }
         }
@@ -40,9 +49,7 @@ pipeline {
 
     post {
         always {
-            script {
-                sh "docker logs ${CONTAINER_NAME} || true"
-            }
+            echo "Pipeline Completed."
         }
     }
 }
