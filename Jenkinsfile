@@ -2,52 +2,37 @@ pipeline {
     agent any
 
     environment {
-        PHP_IMAGE = "php:8.2-apache"   // Gunakan image PHP 8.2
-        COMPOSER_CACHE_DIR = "$WORKSPACE/.composer"
-
-        // Tambahkan path Docker agar dikenali oleh Jenkins
-        //PATH = "/c/Program\\ Files/Docker/Docker/resources/bin:$PATH"
-        //PATH = "/c/Program Files/Docker/Docker/resources/bin:$PATH"
-        //PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;$PATH"
-        PATH = "C:\\Program Files\\Docker\\Docker\\resources\\bin;${env.PATH}"
+        PHP_IMAGE = "php:8.2-apache"  // Pastikan pakai image yang benar
+        CONTAINER_NAME = "aquarium"
+        APP_PORT = "8089"  // Sesuaikan port yang diinginkan
     }
 
     stages {
-        stage('Checkout') {
+        stage('Pull Image') {
             steps {
                 script {
-                    git branch: 'main', url: 'https://github.com/gemanaufal/aquarium.git'  // Ganti dengan repo kamu
+                    sh "docker pull ${PHP_IMAGE}"
                 }
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Run Container') {
             steps {
                 script {
-                    docker.image(PHP_IMAGE).inside {
-                        sh 'php -v'  // Cek PHP version
-                        sh 'composer install --no-dev --prefer-dist'
-                    }
+                    // Stop & remove container jika sudah ada sebelumnya
+                    sh """
+                        docker stop ${CONTAINER_NAME} || true
+                        docker rm ${CONTAINER_NAME} || true
+                        docker run -d --name ${CONTAINER_NAME} -p ${APP_PORT}:8089 ${PHP_IMAGE}
+                    """
                 }
             }
         }
 
-        stage('Run Migrations') {
+        stage('Check Running Container') {
             steps {
                 script {
-                    docker.image(PHP_IMAGE).inside {
-                        sh 'php spark migrate'  // Jalankan migrasi database
-                    }
-                }
-            }
-        }
-
-        stage('Start Application') {
-            steps {
-                script {
-                    docker.image(PHP_IMAGE).inside {
-                        sh 'php spark serve --host=0.0.0.0 --port=8089 &'
-                    }
+                    sh "docker ps"
                 }
             }
         }
@@ -55,7 +40,9 @@ pipeline {
 
     post {
         always {
-            echo "Pipeline Completed."
+            script {
+                sh "docker logs ${CONTAINER_NAME} || true"
+            }
         }
     }
 }
